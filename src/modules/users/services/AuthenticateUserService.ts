@@ -1,5 +1,3 @@
-import { getRepository } from 'typeorm';
-import { compare } from 'bcryptjs';
 import { sign, verify } from 'jsonwebtoken';
 import User from '../infra/typeorm/entities/User';
 import authConfig from '@config/auth';
@@ -7,6 +5,7 @@ import { injectable, inject } from 'tsyringe';
 
 import AppError from '@shared/errors/AppErrors';
 import IUserRepository from '../repositories/IUserRepository';
+import IHashProvider from '../providers/HashProvider/models/IHashProvider';
 
 interface Request{
     email: string;
@@ -22,13 +21,17 @@ interface Response{
 class AuthenticateUserService{
     constructor(
         @inject('UsersRepository')
-        private usersRepository: IUserRepository
+        private usersRepository: IUserRepository,
+
+        @inject('HashProvider')
+        private hashProvider: IHashProvider
     ) {}
 
     public async execute({ email, password }: Request): Promise<Response>{
 
         const user = await this.usersRepository.findByEmail(email);
-        
+
+
         if (!user){
             throw new AppError('Incorrect email/password combination.', 401);
         }
@@ -36,7 +39,7 @@ class AuthenticateUserService{
         // Se passou do if o email existe e podemos acessar:
         // user.password (senha criptografada)
 
-        const passwordMatched = await compare(password, user.password);
+        const passwordMatched = await this.hashProvider.compareHash(password, user.password);
 
         if (!passwordMatched){
             throw new AppError('Incorrect email/password combination.', 401);
