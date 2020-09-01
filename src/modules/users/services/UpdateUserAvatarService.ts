@@ -1,4 +1,3 @@
-import { getRepository } from 'typeorm';
 import path from 'path';
 import fs from 'fs';
 import uploadConfig from '@config/upload';
@@ -7,6 +6,7 @@ import User from '../infra/typeorm/entities/User';
 
 import AppError from '@shared/errors/AppErrors';
 import IUserRepository from '../repositories/IUserRepository';
+import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
 
 interface Request{
     user_id: string;
@@ -18,7 +18,10 @@ interface Request{
 class UpdateUserAvatarServicer{
     constructor(
         @inject('UsersRepository')
-        private usersRepository: IUserRepository
+        private usersRepository: IUserRepository,
+
+        @inject('StorageProvider')
+        private storageProvider: IStorageProvider,
     ) {}
 
     public async execute({ user_id, avatarFilename}: Request): Promise<User>{
@@ -30,17 +33,12 @@ class UpdateUserAvatarServicer{
         }
 
         if (user.avatar){
-            // Deletar avatar anterior
-            const userAvatarFilePath = path.join(uploadConfig.directory, user.avatar);
-
-            const userAvatarFileExists = await fs.promises.stat(userAvatarFilePath);
-
-            if (userAvatarFileExists){
-                await fs.promises.unlink(userAvatarFilePath);
-            }
+           await this.storageProvider.deleteFile(user.avatar);
         }
 
-        user.avatar = avatarFilename;
+        const filename = await this.storageProvider.saveFile(avatarFilename);
+
+        user.avatar = filename;
 
         // Atualiza o usuário no banco (update)
         await this.usersRepository.save(user);

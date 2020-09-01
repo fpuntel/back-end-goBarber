@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/53</span>
+                <span class='fraction'>0/51</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/53</span>
+                <span class='fraction'>0/51</span>
             </div>
         
             
@@ -107,9 +107,7 @@
 <a name='L48'></a><a href='#L48'>48</a>
 <a name='L49'></a><a href='#L49'>49</a>
 <a name='L50'></a><a href='#L50'>50</a>
-<a name='L51'></a><a href='#L51'>51</a>
-<a name='L52'></a><a href='#L52'>52</a>
-<a name='L53'></a><a href='#L53'>53</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L51'></a><a href='#L51'>51</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -159,10 +157,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { getRepository } from 'typeorm';</span></span></span>
-<span class="cstat-no" title="statement not covered" >import path from 'path';</span>
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import path from 'path';</span></span></span>
 <span class="cstat-no" title="statement not covered" >import fs from 'fs';</span>
 <span class="cstat-no" title="statement not covered" >import uploadConfig from '@config/upload';</span>
 <span class="cstat-no" title="statement not covered" >import { injectable, inject } from 'tsyringe';</span>
@@ -170,6 +165,7 @@
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >import AppError from '@shared/errors/AppErrors';</span>
 <span class="cstat-no" title="statement not covered" >import IUserRepository from '../repositories/IUserRepository';</span>
+<span class="cstat-no" title="statement not covered" >import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >interface Request{</span>
 <span class="cstat-no" title="statement not covered" >    user_id: string;</span>
@@ -181,7 +177,10 @@
 <span class="cstat-no" title="statement not covered" >class UpdateUserAvatarServicer{</span>
 <span class="cstat-no" title="statement not covered" >    constructor(</span>
 <span class="cstat-no" title="statement not covered" >        @inject('UsersRepository')</span>
-<span class="cstat-no" title="statement not covered" >        private usersRepository: IUserRepository</span>
+<span class="cstat-no" title="statement not covered" >        private usersRepository: IUserRepository,</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >        @inject('StorageProvider')</span>
+<span class="cstat-no" title="statement not covered" >        private storageProvider: IStorageProvider,</span>
 <span class="cstat-no" title="statement not covered" >    ) {}</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >    public async execute({ user_id, avatarFilename}: Request): Promise&lt;User&gt;{</span>
@@ -193,17 +192,12 @@
 <span class="cstat-no" title="statement not covered" >        }</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >        if (user.avatar){</span>
-<span class="cstat-no" title="statement not covered" >            // Deletar avatar anterior</span>
-<span class="cstat-no" title="statement not covered" >            const userAvatarFilePath = path.join(uploadConfig.directory, user.avatar);</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >            const userAvatarFileExists = await fs.promises.stat(userAvatarFilePath);</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >            if (userAvatarFileExists){</span>
-<span class="cstat-no" title="statement not covered" >                await fs.promises.unlink(userAvatarFilePath);</span>
-<span class="cstat-no" title="statement not covered" >            }</span>
+<span class="cstat-no" title="statement not covered" >           await this.storageProvider.deleteFile(user.avatar);</span>
 <span class="cstat-no" title="statement not covered" >        }</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >        user.avatar = avatarFilename;</span>
+<span class="cstat-no" title="statement not covered" >        const filename = await this.storageProvider.saveFile(avatarFilename);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >        user.avatar = filename;</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >        // Atualiza o usuário no banco (update)</span>
 <span class="cstat-no" title="statement not covered" >        await this.usersRepository.save(user);</span>
@@ -220,7 +214,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
-                at Tue Aug 18 2020 22:03:37 GMT-0300 (GMT-03:00)
+                at Mon Aug 31 2020 18:26:19 GMT-0300 (GMT-03:00)
             </div>
         </div>
         <script src="../../prettify.js"></script>

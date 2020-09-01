@@ -18,7 +18,7 @@ const app = express();
 // Somente requisições via browser
 app.use(cors());
 app.use(express.json());
-app.use('/files', express.static(uploadConfig.directory)); // para mostrar os arquivos
+app.use('/files', express.static(uploadConfig.uploadsFolder)); // para mostrar os arquivos
 app.use(routes);
 
 // Middleawares de erros
