@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { container } from 'tsyringe';
+import { celebrate, Segments, Joi } from 'celebrate';
 
 import multer from 'multer';
 import uploadConfig from '@config/upload';
@@ -15,7 +15,17 @@ const userAvatarController = new UserAvatarController();
 const upload = multer(uploadConfig);
 
 
-usersRouter.post('/', usersController.create);
+usersRouter.post(
+    '/', 
+    celebrate({
+        [Segments.BODY]: {
+            name: Joi.string().required(),
+            email: Joi.string().email().required(),
+            password: Joi.string().required(),
+        }
+    }),
+    usersController.create
+);
 
 // ensureAhthenticated = somente usuários logados poderão acessar
 // upload.single = utiliza single representando que somente um arquivo será upado

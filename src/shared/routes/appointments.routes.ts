@@ -9,6 +9,8 @@ import ensureAuthenticated from '../../modules/users/infra/http/middlewares/ensu
 
 const appointmentsRouter = Router();
 
+const appointmentRepository = new AppointmentsRepository();
+
 //Aplica o middleware em todas as rotas de appointments
 appointmentsRouter.use(ensureAuthenticated);
 
