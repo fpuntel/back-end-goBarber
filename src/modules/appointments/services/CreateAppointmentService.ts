@@ -25,7 +25,7 @@ class CreateAppointmentService {
         private notificationsRepository: INotificationsRepository,
     ) {}
   
-    public async execute({ date, provider_id , user_id}: RequestDTO): Promise<Appointment> {
+    public async execute({ provider_id , user_id, date}: RequestDTO): Promise<Appointment> {
 //        date = new Date(2020, 4, 10, 5, 25)
         const appointmentDate = startOfHour(date);
 
@@ -44,30 +44,27 @@ class CreateAppointmentService {
         // Verifica se já existe agendamento para essa data
         // Precisa utilizar o await pois a findByDate é uma função 
         // async
-        console.log(date);
-        console.log('aaa');
         const findAppointmentSameDate = await this.appointmentsRepository.findByDate(appointmentDate);
-        console.log('bbb');
+        
         if (findAppointmentSameDate) {
             throw new AppError('This appointment is already booked');
         }
-        console.log('ccc');
+
         // Cria um agendamento
         const appointment = await this.appointmentsRepository.create({
             provider_id, 
             user_id,
             date: appointmentDate,
         });
-        console.log('ddd');
+        
 
         const dateFormat = format(appointmentDate, "dd/MM/yyyy 'às' HH:mm'h'");
-        console.log('eeee');
+        
         await this.notificationsRepository.create({
             recipient_id: provider_id,
             content: `Novo agendamento para o ${dateFormat}`,
         });
-        console.log('fff');
-
+        
         return appointment;
     }    
 }
