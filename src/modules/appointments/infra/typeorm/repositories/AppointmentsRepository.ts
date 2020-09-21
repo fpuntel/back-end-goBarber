@@ -15,12 +15,12 @@ class AppointmentsRepository implements IAppointmentsRepositories {
     }
 
     // Retorno Promise, pois é uma função asincrona
-    public async findByDate(date: Date): Promise<Appointment | undefined> {
+    public async findByDate(date: Date, provider_id: string): Promise<Appointment | undefined> {
         // Verificação para não bater horários
         // this. funções do Repositoru
         const findAppointment = await this.ormRepository.findOne({
             // Primeiro date: do banco| Segundo a variável que a função recebe
-            where: { date: date}, 
+            where: { date: date, provider_id}, 
         });
 
         return findAppointment || undefined;
@@ -54,8 +54,8 @@ class AppointmentsRepository implements IAppointmentsRepositories {
                 `to_char(${dateFieldName}, 'DD-MM-YYYY') = '${parsedDay}-${parsedMonth}-${year}'`
                 ),
            },
-
-       })
+           relations: ['user'], // Tras inf. do usuario também
+       });
 
         return appointments;
     }

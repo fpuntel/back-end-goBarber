@@ -1,10 +1,10 @@
 import 'reflect-metadata';
 import { injectable, inject } from 'tsyringe'
 
-import ICacheProvider from '@shared/container/providers/CacheProvider/models/ICacheProvider'
-import { classToClass } from 'class-transformer'
-import Appointment from '../infra/typeorm/entities/Appointment'
-import IAppointmentsRepository from '../repositories/iAppointmentsRepositories'
+import ICacheProvider from '@shared/container/providers/CacheProvider/models/ICacheProvider';
+import { classToClass } from 'class-transformer';
+import Appointment from '../infra/typeorm/entities/Appointment';
+import IAppointmentsRepository from '../repositories/iAppointmentsRepositories';
 
 interface IRequest {
   provider_id: string
@@ -41,7 +41,7 @@ class ListProvidersAppointmentsService {
           provider_id,
           year,
           month,
-          day,
+          day, 
         },
       );
 
@@ -49,7 +49,7 @@ class ListProvidersAppointmentsService {
 
       await this.cacheProvider.save(
         cacheKey, 
-        appointments
+        classToClass(appointments)
       );
     }
 

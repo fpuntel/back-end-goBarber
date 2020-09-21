@@ -18,8 +18,8 @@ type IResponse = Array<{
 @injectable()
 class ListProvidersDayAvailabilyService{
     constructor(
-        @inject('IAppointmentsRepositories')
-        private appointmentsRepository: IAppointmentsRepositories
+        @inject('AppointmentsRepositories')
+        private appointmentsRepository: IAppointmentsRepositories,
     ) {}
 
     public async execute({ provider_id, year, month, day }: Request): Promise<IResponse>{
@@ -49,8 +49,7 @@ class ListProvidersDayAvailabilyService{
 
             return {
                 hour, 
-                available: !hashAppointmentInHour &&
-                isAfter(compareDate, currentDate),
+                available: !hashAppointmentInHour
             }            
         });
 
