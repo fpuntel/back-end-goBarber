@@ -3,6 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import Appointment from '../infra/typeorm/entities/Appointment';
 //import AppointmentRepository from '../infra/typeorm/repositories/AppointmentsRepository';
 import AppError from '@shared/errors/AppErrors';
+import ICacheProvider from '@shared/container/providers/CacheProvider/models/ICacheProvider'
 
 import iAppointmentsRepositories from '../repositories/iAppointmentsRepositories'
 import INotificationsRepository from '@modules/notifications/repositories/INotificationsRepository';
@@ -23,7 +24,11 @@ class CreateAppointmentService {
 
         @inject('NotificationsRepository')
         private notificationsRepository: INotificationsRepository,
+
+        @inject('CacheProvider')
+        private cacheProvider: ICacheProvider,
     ) {}
+
   
     public async execute({ provider_id , user_id, date}: RequestDTO): Promise<Appointment> {
 //        date = new Date(2020, 4, 10, 5, 25)
@@ -44,7 +49,8 @@ class CreateAppointmentService {
         // Verifica se já existe agendamento para essa data
         // Precisa utilizar o await pois a findByDate é uma função 
         // async
-        const findAppointmentSameDate = await this.appointmentsRepository.findByDate(appointmentDate);
+        const findAppointmentSameDate = 
+            await this.appointmentsRepository.findByDate(appointmentDate, provider_id);
         
         if (findAppointmentSameDate) {
             throw new AppError('This appointment is already booked');
@@ -64,6 +70,10 @@ class CreateAppointmentService {
             recipient_id: provider_id,
             content: `Novo agendamento para o ${dateFormat}`,
         });
+
+        await this.cacheProvider.invalidate(
+            `provider-appointments:${provider_id}:${format(appointmentDate, 'yyyy-M-d')}`
+        );
         
         return appointment;
     }    

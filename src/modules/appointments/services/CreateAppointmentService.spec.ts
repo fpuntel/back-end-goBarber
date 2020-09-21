@@ -4,20 +4,24 @@ import AppError from '@shared/errors/AppErrors';
 import FakeNotificationsRepository from '@modules/notifications/repositories/fakes/FakeNotificationsRepository';
 import FakeAppointmentsRepository from '../repositories/fakes/FakeAppointmentsRepository';
 import CreateAppointmentService from './CreateAppointmentService';
+import FakeCacheProvider from '@shared/container/providers/CacheProvider/fakes/FakeCacheProvider';
 
 let fakeAppointmentsRepository: FakeAppointmentsRepository;
 let fakeNotificationsRepository: FakeNotificationsRepository;
 let createAppointment: CreateAppointmentService;
+let fakeCacheProvider: FakeCacheProvider;
 
 // describe para ficar organizado, divide os testes
 describe('CreateAppointments', () => {
     beforeEach(() => {
         fakeAppointmentsRepository = new FakeAppointmentsRepository();
+        fakeCacheProvider = new FakeCacheProvider();
         fakeNotificationsRepository = new FakeNotificationsRepository();
 
         createAppointment = new CreateAppointmentService(
             fakeAppointmentsRepository,
-            fakeNotificationsRepository
+            fakeNotificationsRepository,
+            fakeCacheProvider
         );
     });
 

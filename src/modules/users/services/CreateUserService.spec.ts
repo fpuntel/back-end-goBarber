@@ -1,5 +1,6 @@
 import AppError from '@shared/errors/AppErrors';
 
+import FakeCacheProvider from '@shared/container/providers/CacheProvider/fakes/FakeCacheProvider';
 import FakeUsersRepository from '../repositories/fakes/FakeUsersRepository';
 import CreateUserService from './CreateUserService';
 import FakeHashProvider from '../providers/HashProvider/fakes/FakeHashProvider';
@@ -7,14 +8,16 @@ import FakeHashProvider from '../providers/HashProvider/fakes/FakeHashProvider';
 let fakeUsersRepository: FakeUsersRepository; 
 let fakeHashProvider: FakeHashProvider;
 let createUser: CreateUserService;
+let fakeCacheProvider: FakeCacheProvider;
 
 // describe para ficar organizado, divide os testes
 describe('CreateUser', () => {
     beforeEach(() => {
         fakeUsersRepository = new FakeUsersRepository();
         fakeHashProvider = new FakeHashProvider();
+        fakeCacheProvider = new FakeCacheProvider();
 
-        createUser = new CreateUserService(fakeUsersRepository, fakeHashProvider);
+        createUser = new CreateUserService(fakeUsersRepository, fakeHashProvider, fakeCacheProvider);
     })
 
     // Nao criar nada no banco, para isso eh criado um repositorio fake.

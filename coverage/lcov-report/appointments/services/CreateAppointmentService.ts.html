@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.1% </span>
+                <span class="strong">97.56% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>67/69</span>
+                <span class='fraction'>80/82</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68.12% </span>
+                <span class="strong">68.57% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>47/69</span>
+                <span class='fraction'>48/70</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">97.1% </span>
+                <span class="strong">97.56% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>67/69</span>
+                <span class='fraction'>80/82</span>
             </div>
         
             
@@ -125,7 +125,21 @@
 <a name='L66'></a><a href='#L66'>66</a>
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
-<a name='L69'></a><a href='#L69'>69</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -151,8 +165,13 @@
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
@@ -171,10 +190,17 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
@@ -198,6 +224,7 @@ import { inject, injectable } from 'tsyringe';
 import Appointment from '../infra/typeorm/entities/Appointment';
 //import AppointmentRepository from '../infra/typeorm/repositories/AppointmentsRepository';
 import AppError from '@shared/errors/AppErrors';
+import ICacheProvider from '@shared/container/providers/CacheProvider/models/ICacheProvider'
 &nbsp;
 import iAppointmentsRepositories from '../repositories/iAppointmentsRepositories'
 import INotificationsRepository from '@modules/notifications/repositories/INotificationsRepository';
@@ -218,9 +245,14 @@ class CreateAppointmentService {
 &nbsp;
         @inject('NotificationsRepository')
         private notificationsRepository: INotificationsRepository,
+&nbsp;
+        @inject('CacheProvider')
+        private cacheProvider: ICacheProvider,
     ) {}
+&nbsp;
   
-    public async execute({ date, provider_id , user_id}: RequestDTO): Promise&lt;Appointment&gt; {
+    public async execute({ provider_id , user_id, date}: RequestDTO): Promise&lt;Appointment&gt; {
+//        date = new Date(2020, 4, 10, 5, 25)
         const appointmentDate = startOfHour(date);
 &nbsp;
         if (isBefore(appointmentDate, Date.now())){
@@ -238,25 +270,32 @@ class CreateAppointmentService {
         // Verifica se já existe agendamento para essa data
         // Precisa utilizar o await pois a findByDate é uma função 
         // async
-        const findAppointmentSameDate = await this.appointmentsRepository.findByDate(appointmentDate);
-    
+        const findAppointmentSameDate = 
+            await this.appointmentsRepository.findByDate(appointmentDate, provider_id);
+        
         if (findAppointmentSameDate) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >            throw new AppError('This appointment is already booked');</span>
 <span class="cstat-no" title="statement not covered" >        }</span>
+&nbsp;
         // Cria um agendamento
         const appointment = await this.appointmentsRepository.create({
             provider_id, 
             user_id,
             date: appointmentDate,
         });
+        
 &nbsp;
         const dateFormat = format(appointmentDate, "dd/MM/yyyy 'às' HH:mm'h'");
-&nbsp;
+        
         await this.notificationsRepository.create({
             recipient_id: provider_id,
             content: `Novo agendamento para o ${dateFormat}`,
         });
 &nbsp;
+        await this.cacheProvider.invalidate(
+            `provider-appointments:${provider_id}:${format(appointmentDate, 'yyyy-M-d')}`
+        );
+        
         return appointment;
     }    
 }
@@ -268,7 +307,7 @@ export default CreateAppointmentService;<span class="fstat-no" title="function n
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
-                at Sun Sep 13 2020 22:29:10 GMT-0300 (GMT-03:00)
+                at Mon Sep 21 2020 09:20:06 GMT-0300 (GMT-03:00)
             </div>
         </div>
         <script src="../../prettify.js"></script>
