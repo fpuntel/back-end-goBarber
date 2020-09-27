@@ -19,10 +19,11 @@ const app = express();
 // Cors evitra que sites que não seja da nossa aplicação
 // possam acessar o backend
 // Somente requisições via browser
-app.use(rateLimiter);
+
 app.use(cors());
 app.use(express.json());
 app.use('/files', express.static(uploadConfig.uploadsFolder)); // para mostrar os arquivos
+app.use(rateLimiter);
 app.use(routes);
 
 app.use(errors());

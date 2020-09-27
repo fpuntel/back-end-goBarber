@@ -24,26 +24,27 @@ class UpdateProfileService{
     ) {}
 
     public async execute({ user_id, name, email, password, old_password }: Request): Promise<User>{
-       
+        console.log('aaa');
         const user = await this.usersRepository.finById(user_id);
-
+        console.log('aaa');
         if (!user) {
             throw new AppError('User not found');
         }
+        console.log('bbb');
 
         const userWithUpdateEmail = await this.usersRepository.findByEmail(email);
-
+        console.log('ccc');
         if( userWithUpdateEmail && userWithUpdateEmail.id !== user_id) {
             throw new AppError('E-mail already in use.');
         }
-
+        console.log('ddd');
         user.name = name;
         user.email = email;
 
         if (password && !old_password){
             throw new AppError('You need to inform the old password to set a new password.')
         }
-
+        console.log('eeee');
 
         if(password && old_password){
             const checkOldPassword = await this.hashProvider.compareHash(
@@ -57,7 +58,7 @@ class UpdateProfileService{
 
             user.password = await this.hashProvider.generateHash(password);
         }
-
+        console.log('fff');
         return this.usersRepository.save(user);
     }
 
